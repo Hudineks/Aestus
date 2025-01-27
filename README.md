@@ -137,7 +137,7 @@ Otevřete Firebase Realtime Database (nebo index.html) pro kontrolu přijatých 
 ## Galerie / Obrázky
 ![fotka lahve](./IMG_20250127_153859.jpg)
 ![zapojení](./IMG_20250127_153919.jpg)
-![webové rozhraní](./2025-01-27_153450.png)
+![webové rozhraní](./image.png)
 
 Zařízení v akci
 
