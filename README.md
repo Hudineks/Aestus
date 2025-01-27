@@ -135,7 +135,9 @@ ESP provede měření, pokusí se odeslat data do Firebase.
 Otevřete Firebase Realtime Database (nebo index.html) pro kontrolu přijatých dat.
 
 ## Galerie / Obrázky
-(Propojte si reálné obrázky – zde jen příklad syntaxe.)
+![fotka lahve](./IMG_20250127_153859.jpg)
+![zapojení](./IMG_20250127_153919.jpg)
+![webové rozhraní](./2025-01-27_153450.png)
 
 Zařízení v akci
 
