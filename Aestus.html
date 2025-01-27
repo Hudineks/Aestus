@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <title>Water Level Logs</title>
+  <!-- Modulové Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
+
+    // Firebase konfigurace
+    const firebaseConfig = {
+      apiKey: "AIzaSyDWWIJv10gA7lXgbtWQ90Y_2rVG_-2RlOY",
+      authDomain: "aestus-8eaf8.firebaseapp.com",
+      databaseURL: "https://aestus-8eaf8-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "aestus-8eaf8",
+      storageBucket: "aestus-8eaf8.firebasestorage.app",
+      messagingSenderId: "1084307861402",
+      appId: "1:1084307861402:web:60b4d8cd99e94639fa1423",
+      measurementId: "G-FVL0V123YJ"
+    };
+
+    // Inicializace Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Rovnice pro výpočet objemu
+    function sensorToVolume(x) {
+      return (-2e-7 * x * x) + (0.0393 * x) - 421.45;
+    }
+
+    // Funkce pro načtení dat
+    const loadWaterLevelLogs = () => {
+      const logsRef = ref(db, "water_level_logs");
+
+      onValue(logsRef, (snapshot) => {
+        const data = snapshot.val();
+
+        // Odkazy na tabulky
+        const tableBodyLeft = document.getElementById("logsTableBody");
+        const tableBodyRight = document.getElementById("deltaTableBody");
+        const dailyTableBody = document.getElementById("dailyTableBody");
+
+        // Vyčištění starých dat z tabulek
+        tableBodyLeft.innerHTML = "";
+        tableBodyRight.innerHTML = "";
+        dailyTableBody.innerHTML = "";
+
+        // Objekt pro ukládání denní celkové spotřeby (vypité vody)
+        const dailyConsumption = {};
+
+        if (data) {
+          let previousVolume = null;
+
+          // Pro zajištění chronologického pořadí můžeme seřadit záznamy dle timestamp
+          const sortedData = Object.entries(data).sort((a, b) => {
+            return a[1].timestamp - b[1].timestamp;
+          });
+
+          sortedData.forEach(([key, record]) => {
+            const timestamp = record.timestamp;
+            const sensorValue = record.value;
+            const volume = sensorToVolume(sensorValue);
+            const date = new Date(timestamp * 1000);
+
+            // Levá tabulka (původní data)
+            const rowLeft = `
+              <tr>
+                <td>${date.toLocaleString()}</td>
+                <td>${sensorValue}</td>
+                <td>${volume.toFixed(2)} ml</td>
+              </tr>
+            `;
+            tableBodyLeft.innerHTML += rowLeft;
+
+            // Pravá tabulka (delta volume) + výpočet denní spotřeby
+            if (previousVolume !== null) {
+              const deltaVolume = volume - previousVolume;
+
+              // Zajímá nás pouze případ, kdy objem klesl => skutečně vypito
+              if (deltaVolume < 0) {
+                // Spotřebováno
+                const consumed = Math.abs(deltaVolume);
+
+                // Zapsat do "Delta Volume" tabulky
+                const rowRight = `
+                  <tr>
+                    <td>${date.toLocaleString()}</td>
+                    <td>${consumed.toFixed(2)} ml</td>
+                  </tr>
+                `;
+                tableBodyRight.innerHTML += rowRight;
+
+                // Zapsat do denní spotřeby
+                const dayKey = date.toLocaleDateString("cs-CZ"); 
+                if (!dailyConsumption[dayKey]) {
+                  dailyConsumption[dayKey] = 0;
+                }
+                dailyConsumption[dayKey] += consumed;
+              }
+              // Pokud je deltaVolume > 0, znamená to doplnění vody => nezobrazujeme v druhé tabulce
+            }
+
+            previousVolume = volume;
+          });
+
+          // Načíst denní spotřebu (celkem vypito) do třetí tabulky
+          // Seřadíme dny abecedně (resp. chronologicky) pro hezčí výpis
+          const sortedDays = Object.keys(dailyConsumption).sort((a, b) => {
+            // Porovnáváme reálně datum
+            return new Date(a) - new Date(b);
+          });
+
+          sortedDays.forEach((day) => {
+            const rowDaily = `
+              <tr>
+                <td>${day}</td>
+                <td>${dailyConsumption[day].toFixed(2)} ml</td>
+              </tr>
+            `;
+            dailyTableBody.innerHTML += rowDaily;
+          });
+
+        } else {
+          tableBodyLeft.innerHTML = `<tr><td colspan="3">Žádná data k zobrazení.</td></tr>`;
+          tableBodyRight.innerHTML = `<tr><td colspan="2">Žádná data k zobrazení.</td></tr>`;
+          dailyTableBody.innerHTML = `<tr><td colspan="2">Žádná data k zobrazení.</td></tr>`;
+        }
+      });
+    };
+
+    // Načtení dat po načtení stránky
+    document.addEventListener("DOMContentLoaded", loadWaterLevelLogs);
+  </script>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      max-width: 400px;
+    }
+    th, td {
+      border: 1px solid #aaa;
+      padding: 8px;
+    }
+    th {
+      background: #ddd;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Water Level Logs</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Čas záznamu</th>
+          <th>Hodnota senzoru</th>
+          <th>Objem (ml)</th>
+        </tr>
+      </thead>
+      <tbody id="logsTableBody"></tbody>
+    </table>
+  </div>
+  <div class="container">
+    <h1>Delta Volume (pouze vypito)</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Čas záznamu</th>
+          <th>Delta objem (ml)</th>
+        </tr>
+      </thead>
+      <tbody id="deltaTableBody"></tbody>
+    </table>
+  </div>
+  <div class="container">
+    <h1>Celkový objem vypitý za den</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Den</th>
+          <th>Celkem vypito (ml)</th>
+        </tr>
+      </thead>
+      <tbody id="dailyTableBody"></tbody>
+    </table>
+  </div>
+</body>
+</html>
