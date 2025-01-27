@@ -78,14 +78,15 @@ const char* password = "HesloKSite
 
 #define FIREBASE_HOST "https://xxx-xxxxx-default-rtdb.europe-west1.firebasedatabase.app/"
 #define FIREBASE_AUTH "xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+```
 **ssid, password: Váš název a heslo Wi-Fi.**
 FIREBASE_HOST: URL Realtime Database z Firebase konzole.
 FIREBASE_AUTH: Váš klíč/token.
 Poznámka: Pro vyšší bezpečnost lze citlivá data (Wi-Fi, tokeny) přesunout do souboru Secrets.h a ten nezařadit do repozitáře pomocí .gitignore.
 
-Popis kódu Aestus.ino
+## Popis kódu Aestus.ino
 Includy
-
+```
 cpp
 Copy
 Edit
@@ -93,8 +94,10 @@ Edit
 #include <WiFi.h>
 #include <Firebase_ESP_Client.h>
 #include <time.h>
+```
 Zajišťují Wi-Fi, práci s Firebase a režimem spánku.
-Globální proměnné
+
+## Globální proměnné
 
 BUTTON_PIN = 16, LED_PIN = 15, touchPin = T11.
 FIFO buffer fifoBuffer[], index fifoIndex k ukládání měření offline.
@@ -114,7 +117,9 @@ Nastaví NTP čas (configTime(...)).
 Spočítá aktuální epoch čas (pokud je Wi-Fi nedostupné, dopočítá z předchozího času).
 Vytvoří JSON a buď ho odešle do Firebase, nebo uloží do FIFO, když není internet.
 esp_light_sleep_start() opět uspí desku.
-Webové rozhraní
+
+## Webové rozhraní
+
 V repozitáři se nachází index.html s JavaScriptem (Firebase SDK).
 Připojí se k téže databázi (databaseURL, klíče) a čte cestu /water_level_logs.
 Zobrazuje tabulky:
@@ -122,23 +127,24 @@ Zobrazuje tabulky:
 Delta objem (jen při pití).
 Celkový objem vypitý za den.
 Spustíte jej v prohlížeči nebo na lokálním serveru (např. Live Server ve VSCode).
-Spuštění projektu
+
+## Spuštění projektu
 Zkompilujte a nahrajte Aestus.ino do Wemos S2 mini (zvolte správnou desku v Arduino IDE).
 Po startu se deska uspí. Probuzení nastane stiskem tlačítka na GPIO 16.
 ESP provede měření, pokusí se odeslat data do Firebase.
 Otevřete Firebase Realtime Database (nebo index.html) pro kontrolu přijatých dat.
-Galerie / Obrázky
+
+## Galerie / Obrázky
 (Propojte si reálné obrázky – zde jen příklad syntaxe.)
 
 Zařízení v akci
 
 Webové rozhraní
 
-Licence
+## Licence
 Projekt Aestus je vyvíjen hlavně pro studijní účely a není aktuálně licencován pod žádnou konkrétní open-source licencí. Pokud kód šíříte či upravujete, mějte na paměti licence knihoven (např. Firebase_ESP_Client) a související předpisy.
 
-Copy
-Edit
+
 
 
 
