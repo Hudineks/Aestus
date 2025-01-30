@@ -40,8 +40,8 @@ Projekt **Aestus** slouží k měření hladiny vody pomocí desky **Wemos S2 mi
    - Může to být kovová ploška či drátek.
 4. **Napájení**  
    - Většinou stačí napájení přes microUSB / USB-C na Wemos S2 mini.
-5. **Zapojení**
-   - ![]()
+5. **Princip**
+   - ![](Sekvencni_diagram.png)
 
 ---
 
